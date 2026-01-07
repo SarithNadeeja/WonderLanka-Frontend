@@ -1,0 +1,49 @@
+.dashboard {
+  width: 100%;
+}
+
+.dashboard-hero {
+  height: 80vh;
+  background-size: cover;
+  background-position: center;
+}
+
+.dashboard-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  height: 100%;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard-overlay h1 {
+  font-size: 48px;
+}
+
+.dashboard-overlay p {
+  font-size: 18px;
+}
+
+.dashboard-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 40px;
+}
+
+.action-card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  transition: 0.2s;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+}

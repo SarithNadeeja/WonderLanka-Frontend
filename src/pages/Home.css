@@ -1,0 +1,48 @@
+.home-hero {
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+}
+
+.home-overlay {
+  background: rgba(0, 0, 0, 0.45);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-title {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.home-subtitle {
+  font-size: 18px;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-login-btn {
+  margin-top: 20px;
+  padding: 10px 28px;
+  background: rgb(0, 0, 0);
+  border: 1px solid white;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.home-login-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}

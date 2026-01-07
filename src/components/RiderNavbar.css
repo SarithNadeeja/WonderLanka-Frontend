@@ -1,0 +1,140 @@
+/* ---------- Navbar Base ---------- */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 96%;
+  height: 70px;
+  padding: 0 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  z-index: 1000;
+}
+
+/* Logo */
+.nav-heading {
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Nav Items */
+.nav-items {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-items span {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Buttons */
+.nav-login-btn {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Profile Menu */
+.profile-menu {
+  position: relative;
+  padding: 6px;
+}
+
+.profile-icon {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background: white;
+  color: black;
+  border-radius: 8px;
+  width: 160px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.profile-dropdown div {
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.profile-dropdown .logout {
+  color: red;
+  font-weight: bold;
+}
+
+/* Hamburger */
+.nav-hamburger {
+  display: none;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.rider-dropdown {
+  width: 260px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #0047ab;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.profile-name {
+  font-weight: 600;
+}
+
+.status {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.status.not-verified {
+  color: #d9534f;
+}
+
+.status.pending {
+  color: #f0ad4e;
+}
+
+.status.verified {
+  color: #5cb85c;
+}
+
+
+/* ---------- Mobile ---------- */
+@media (max-width: 768px) {
+  .nav-items {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: block;
+  }
+}

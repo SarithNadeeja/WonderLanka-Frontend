@@ -1,0 +1,89 @@
+.verify-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #001f3f, #003366);
+}
+
+.verify-card {
+  width: 360px;
+  padding: 40px;
+  text-align: center;
+
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  border-radius: 24px;
+
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  color: #003366;
+}
+
+.verify-card h2 {
+  margin: 16px 0 8px;
+}
+
+.verify-card p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.verify-card button {
+  margin-top: 20px;
+  padding: 10px;
+  width: 100%;
+
+  background: linear-gradient(to right, #0047ab, #007bff);
+  border: none;
+  border-radius: 20px;
+
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.verify-card button:hover {
+  opacity: 0.9;
+}
+
+.secondary {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.secondary:hover {
+  opacity: 1;
+}
+
+/* Icons */
+.icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto;
+
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon.success {
+  background: #d4edda;
+  color: #1e7e34;
+}
+
+.icon.warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.icon.error {
+  background: #f8d7da;
+  color: #721c24;
+}
