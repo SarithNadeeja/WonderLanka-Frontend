@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 
 function VehicleDetails() {
 
-  // ===== STATE =====
+  // ===== STATE (MATCH BACKEND EXACTLY) =====
   const [formData, setFormData] = useState({
     vehicleType: "",
     vehicleBrand: "",
     vehicleModel: "",
-    registrationNumber: "",
-    manufactureYear: ""
+    regNo: "",
+    year: ""
   });
 
   const [hasData, setHasData] = useState(false);
@@ -21,7 +21,7 @@ function VehicleDetails() {
 
       try {
         const response = await fetch(
-          "http://localhost:8085/api/rider/vehicle-details", // backend later
+          "http://localhost:8085/api/rider/vehicle-common-details",
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -38,12 +38,12 @@ function VehicleDetails() {
             vehicleType: data.vehicleType || "",
             vehicleBrand: data.vehicleBrand || "",
             vehicleModel: data.vehicleModel || "",
-            registrationNumber: data.registrationNumber || "",
-            manufactureYear: data.manufactureYear || ""
+            regNo: data.regNo || "",
+            year: data.year || ""
           });
 
           setHasData(true);
-          setIsEditing(false); // start locked
+          setIsEditing(false); // locked by default
         }
 
       } catch (error) {
@@ -57,7 +57,7 @@ function VehicleDetails() {
   // ===== HANDLERS =====
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -66,7 +66,7 @@ function VehicleDetails() {
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
 
-    // Unlock form
+    // STEP 1: unlock
     if (hasData && !isEditing) {
       setIsEditing(true);
       return;
@@ -74,7 +74,7 @@ function VehicleDetails() {
 
     try {
       const response = await fetch(
-        "http://localhost:8085/api/rider/vehicle-details",
+        "http://localhost:8085/api/rider/vehicle-common-details",
         {
           method: hasData ? "PUT" : "POST",
           headers: {
@@ -95,7 +95,7 @@ function VehicleDetails() {
       console.log("Saved vehicle details:", data);
 
       setHasData(true);
-      setIsEditing(false); // re-lock
+      setIsEditing(false); // 🔒 re-lock
 
       alert("Vehicle details saved successfully");
 
@@ -109,7 +109,6 @@ function VehicleDetails() {
 
   return (
     <>
-
       {/* ===== VEHICLE PHOTO ===== */}
       <div className="profile-photo-section">
         <div className="profile-photo-wrapper">
@@ -177,8 +176,8 @@ function VehicleDetails() {
             <label>4. Vehicle Registration Number :</label>
             <input
               type="text"
-              name="registrationNumber"
-              value={formData.registrationNumber}
+              name="regNo"
+              value={formData.regNo}
               onChange={handleChange}
               disabled={isLocked}
             />
@@ -187,9 +186,9 @@ function VehicleDetails() {
           <div>
             <label>5. Vehicle Manufacturer Year :</label>
             <input
-              type="text"
-              name="manufactureYear"
-              value={formData.manufactureYear}
+              type="number"
+              name="year"
+              value={formData.year}
               onChange={handleChange}
               disabled={isLocked}
             />
@@ -198,10 +197,7 @@ function VehicleDetails() {
         </div>
 
         <div className="form-actions">
-          <button
-            className="primary-btn"
-            onClick={handleSubmit}
-          >
+          <button className="primary-btn" onClick={handleSubmit}>
             {!hasData
               ? "Save Details"
               : isEditing
@@ -241,7 +237,6 @@ function VehicleDetails() {
           Add clear photos of your vehicle (front, back, sides)
         </p>
       </div>
-
     </>
   );
 }
