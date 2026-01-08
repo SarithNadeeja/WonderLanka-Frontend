@@ -1,21 +1,125 @@
+import { useState, useEffect } from "react";
+
 function VehicleDetails() {
+
+  // ===== STATE =====
+  const [formData, setFormData] = useState({
+    vehicleType: "",
+    vehicleBrand: "",
+    vehicleModel: "",
+    registrationNumber: "",
+    manufactureYear: ""
+  });
+
+  const [hasData, setHasData] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // ===== LOAD EXISTING VEHICLE DATA =====
+  useEffect(() => {
+    const fetchVehicleDetails = async () => {
+      const token = localStorage.getItem("token");
+
+      try {
+        const response = await fetch(
+          "http://localhost:8085/api/rider/vehicle-details", // backend later
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data) {
+          setFormData({
+            vehicleType: data.vehicleType || "",
+            vehicleBrand: data.vehicleBrand || "",
+            vehicleModel: data.vehicleModel || "",
+            registrationNumber: data.registrationNumber || "",
+            manufactureYear: data.manufactureYear || ""
+          });
+
+          setHasData(true);
+          setIsEditing(false); // start locked
+        }
+
+      } catch (error) {
+        console.error("Failed to load vehicle details", error);
+      }
+    };
+
+    fetchVehicleDetails();
+  }, []);
+
+  // ===== HANDLERS =====
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
+
+    // Unlock form
+    if (hasData && !isEditing) {
+      setIsEditing(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/vehicle-details",
+        {
+          method: hasData ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        alert(`Error ${response.status}: ${text}`);
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Saved vehicle details:", data);
+
+      setHasData(true);
+      setIsEditing(false); // re-lock
+
+      alert("Vehicle details saved successfully");
+
+    } catch (error) {
+      console.error("Save failed", error);
+      alert("Failed to save vehicle details");
+    }
+  };
+
+  const isLocked = hasData && !isEditing;
+
   return (
     <>
 
-      {/* ===== PROFILE PHOTO ===== */}
+      {/* ===== VEHICLE PHOTO ===== */}
       <div className="profile-photo-section">
         <div className="profile-photo-wrapper">
           <div className="profile-photo-circle">
-            {/* Default initials */}
-            <span className="profile-initials">U</span>
-
-            {/* Upload overlay */}
+            <span className="profile-initials">V</span>
             <label className="photo-upload-btn">
               +
               <input type="file" hidden />
             </label>
           </div>
-
           <p className="photo-hint">Upload Vehicle Photo</p>
         </div>
       </div>
@@ -24,54 +128,90 @@ function VehicleDetails() {
         <h3>Vehicle Common Details</h3>
 
         <div className="form-grid">
+
           <div>
             <label>1. Vehicle Type :</label>
-            <select>
-              <option>Select</option>
-              <option>Car</option>
-              <option>Bike</option>
-              <option>Van</option>
+            <select
+              name="vehicleType"
+              value={formData.vehicleType}
+              onChange={handleChange}
+              disabled={isLocked}
+            >
+              <option value="">Select</option>
+              <option value="Car">Car</option>
+              <option value="Bike">Bike</option>
+              <option value="Van">Van</option>
             </select>
           </div>
 
           <div>
             <label>2. Vehicle Brand :</label>
-            <select>
-              <option>Select</option>
-              <option>Toyota</option>
-              <option>Honda</option>
-              <option>Suzuki</option>
+            <select
+              name="vehicleBrand"
+              value={formData.vehicleBrand}
+              onChange={handleChange}
+              disabled={isLocked}
+            >
+              <option value="">Select</option>
+              <option value="Toyota">Toyota</option>
+              <option value="Honda">Honda</option>
+              <option value="Suzuki">Suzuki</option>
             </select>
           </div>
 
           <div>
             <label>3. Vehicle Model :</label>
-            <select>
-              <option>Select</option>
-              <option>Model 1</option>
-              <option>Model 2</option>
+            <select
+              name="vehicleModel"
+              value={formData.vehicleModel}
+              onChange={handleChange}
+              disabled={isLocked}
+            >
+              <option value="">Select</option>
+              <option value="Model 1">Model 1</option>
+              <option value="Model 2">Model 2</option>
             </select>
           </div>
 
           <div>
             <label>4. Vehicle Registration Number :</label>
-            <input type="text" />
+            <input
+              type="text"
+              name="registrationNumber"
+              value={formData.registrationNumber}
+              onChange={handleChange}
+              disabled={isLocked}
+            />
           </div>
 
           <div>
             <label>5. Vehicle Manufacturer Year :</label>
-            <input type="text" />
+            <input
+              type="text"
+              name="manufactureYear"
+              value={formData.manufactureYear}
+              onChange={handleChange}
+              disabled={isLocked}
+            />
           </div>
+
         </div>
 
         <div className="form-actions">
-          <button className="primary-btn">
-            Save Vehicle Details
+          <button
+            className="primary-btn"
+            onClick={handleSubmit}
+          >
+            {!hasData
+              ? "Save Details"
+              : isEditing
+                ? "Save Changes"
+                : "Click to Update"}
           </button>
         </div>
-
-
       </div>
+
+      {/* ===== VEHICLE VERIFICATION ===== */}
       <div className="profile-card">
         <h3>Vehicle Verification Details</h3>
 
