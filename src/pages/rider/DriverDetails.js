@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 function DriverDetails() {
 
-  // ===== STATE =====
+  // ===== PERSONAL DETAILS STATE =====
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -11,13 +11,17 @@ function DriverDetails() {
   });
 
   const [hasData, setHasData] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // 👈 STEP 2
+  const [isEditing, setIsEditing] = useState(false);
 
-  // ===== LOAD EXISTING DATA =====
+  // ===== PROFILE IMAGE STATE =====
+  const [profileImage, setProfileImage] = useState(null);
+
+  const token = localStorage.getItem("token");
+  
+
+  // ===== LOAD PERSONAL DETAILS =====
   useEffect(() => {
     const fetchPersonalDetails = async () => {
-      const token = localStorage.getItem("token");
-
       try {
         const response = await fetch(
           "http://localhost:8085/api/rider/personal-details",
@@ -41,18 +45,48 @@ function DriverDetails() {
           });
 
           setHasData(true);
-          setIsEditing(false); // start locked
+          setIsEditing(false);
         }
-
       } catch (error) {
         console.error("Failed to load rider details", error);
       }
     };
 
     fetchPersonalDetails();
-  }, []);
+  }, [token]);
 
-  // ===== HANDLERS =====
+// ===== LOAD PROFILE IMAGE FROM BACKEND =====
+useEffect(() => {
+  const fetchProfileImage = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/profile-picture",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) return;
+
+      const imageUrl = await response.text();
+
+      if (imageUrl) {
+        setProfileImage(
+          `http://localhost:8085${imageUrl}?t=${Date.now()}`
+        );
+      }
+    } catch (err) {
+      console.error("Failed to load profile image", err);
+    }
+  };
+
+  fetchProfileImage();
+}, [token]);
+
+
+  // ===== PERSONAL DETAILS HANDLERS =====
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -61,68 +95,115 @@ function DriverDetails() {
     }));
   };
 
-const handleSubmit = async () => {
-  const token = localStorage.getItem("token");
+  const handleSubmit = async () => {
 
-  // STEP 2 behavior: unlock form
-  if (hasData && !isEditing) {
-    setIsEditing(true);
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      "http://localhost:8085/api/rider/personal-details",
-      {
-        method: hasData ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      }
-    );
-
-    if (!response.ok) {
-      const text = await response.text();
-      alert(`Error ${response.status}: ${text}`);
+    if (hasData && !isEditing) {
+      setIsEditing(true);
       return;
     }
 
-    const data = await response.json();
-    console.log("Saved rider details:", data);
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/personal-details",
+        {
+          method: hasData ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        }
+      );
 
-    setHasData(true);
-    setIsEditing(false); // 🔒 re-lock after save
+      if (!response.ok) {
+        const text = await response.text();
+        alert(`Error ${response.status}: ${text}`);
+        return;
+      }
 
-    alert("Changes saved successfully");
+      setHasData(true);
+      setIsEditing(false);
+      alert("Changes saved successfully");
 
-  } catch (error) {
-    console.error("Save failed", error);
-    alert("Failed to save changes");
-  }
-};
+    } catch (error) {
+      console.error("Save failed", error);
+      alert("Failed to save changes");
+    }
+  };
 
+  // ===== PROFILE IMAGE UPLOAD =====
+  const handleProfileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/profile-picture",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text);
+      }
+
+      const imagePath = await response.text();
+
+      // cache bust
+      setProfileImage(
+        `http://localhost:8085${imagePath}?t=${Date.now()}`
+      );
+
+    } catch (error) {
+      console.error("Profile upload failed", error);
+      alert("Failed to upload profile picture");
+    }
+  };
 
   const isLocked = hasData && !isEditing;
 
   return (
     <>
-
       {/* ===== PROFILE PHOTO ===== */}
       <div className="profile-photo-section">
         <div className="profile-photo-wrapper">
           <div className="profile-photo-circle">
-            <span className="profile-initials">U</span>
+
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
+                className="profile-photo-img"
+              />
+            ) : (
+              <span className="profile-initials">U</span>
+            )}
+
             <label className="photo-upload-btn">
               +
-              <input type="file" hidden />
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleProfileUpload}
+              />
             </label>
+
           </div>
           <p className="photo-hint">Upload profile photo</p>
         </div>
       </div>
 
+      {/* ===== PERSONAL DETAILS ===== */}
       <div className="profile-card">
         <h3>Rider Personal Details</h3>
 
@@ -176,10 +257,7 @@ const handleSubmit = async () => {
         </div>
 
         <div className="form-actions">
-          <button
-            className="primary-btn"
-            onClick={handleSubmit}
-          >
+          <button className="primary-btn" onClick={handleSubmit}>
             {!hasData
               ? "Save Personal Details"
               : isEditing
@@ -189,6 +267,7 @@ const handleSubmit = async () => {
         </div>
       </div>
 
+      {/* ===== VERIFICATION (UNCHANGED) ===== */}
       <div className="profile-card">
         <h3>Rider Verification Details</h3>
 

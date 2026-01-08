@@ -231,6 +231,16 @@
   align-items: center;
   justify-content: center;
   position: relative;
+
+  overflow: hidden; /* ✅ ADDED: clips image to circle */
+}
+
+/* ✅ ADDED: profile image styling */
+.profile-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* crops nicely */
+  object-position: center;
 }
 
 /* Initials inside circle */
@@ -256,6 +266,7 @@
   font-size: 20px;
   cursor: pointer;
   transition: transform 0.2s ease;
+  z-index: 2; /* ✅ ensures button stays clickable over image */
 }
 
 .photo-upload-btn:hover {
@@ -280,6 +291,7 @@
     font-size: 34px;
   }
 }
+
 
 /* ================= VEHICLE PHOTO GRID ================= */
 
