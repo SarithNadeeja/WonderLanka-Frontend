@@ -241,6 +241,7 @@
   height: 100%;
   object-fit: cover;      /* crops nicely */
   object-position: center;
+  z-index: 1;
 }
 
 /* Initials inside circle */
@@ -266,8 +267,9 @@
   font-size: 20px;
   cursor: pointer;
   transition: transform 0.2s ease;
-  z-index: 2; /* ✅ ensures button stays clickable over image */
+  z-index: 3;          /* 🔥 bump slightly higher */
 }
+
 
 .photo-upload-btn:hover {
   transform: scale(1.1);
@@ -346,4 +348,60 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.photo-remove-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 4;          /* ✅ THIS FIXES VISIBILITY */
+}
+
+.photo-remove-btn:hover {
+  background: red;
+}
+
+.photo-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.secondary-btn {
+  background: white;
+  color: black;
+  border: 1px solid black;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.danger-btn {
+  background: transparent;
+  color: red;
+  border: 1px solid red;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.danger-btn:hover {
+  background: red;
+  color: white;
+}
+
+
+
 

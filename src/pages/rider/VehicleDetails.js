@@ -19,7 +19,9 @@ function VehicleDetails() {
 
   const token = localStorage.getItem("token");
 
-  // ===== LOAD VEHICLE DETAILS =====
+  // ==============================
+  // LOAD VEHICLE DETAILS
+  // ==============================
   useEffect(() => {
     const fetchVehicleDetails = async () => {
       try {
@@ -48,15 +50,17 @@ function VehicleDetails() {
           setHasData(true);
           setIsEditing(false);
         }
-      } catch (error) {
-        console.error("Failed to load vehicle details", error);
+      } catch (err) {
+        console.error("Failed to load vehicle details", err);
       }
     };
 
     fetchVehicleDetails();
   }, [token]);
 
-  // ===== LOAD VEHICLE PROFILE IMAGE =====
+  // ==============================
+  // LOAD VEHICLE PROFILE IMAGE
+  // ==============================
   useEffect(() => {
     const fetchVehicleImage = async () => {
       try {
@@ -78,15 +82,17 @@ function VehicleDetails() {
             `http://localhost:8085${imageUrl}?t=${Date.now()}`
           );
         }
-      } catch (error) {
-        console.error("Failed to load vehicle image", error);
+      } catch (err) {
+        console.error("Failed to load vehicle image", err);
       }
     };
 
     fetchVehicleImage();
   }, [token]);
 
-  // ===== FORM HANDLERS =====
+  // ==============================
+  // FORM HANDLERS
+  // ==============================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -125,19 +131,21 @@ function VehicleDetails() {
       setIsEditing(false);
       alert("Vehicle details saved successfully");
 
-    } catch (error) {
-      console.error("Save failed", error);
+    } catch (err) {
+      console.error("Save failed", err);
       alert("Failed to save vehicle details");
     }
   };
 
-  // ===== VEHICLE IMAGE UPLOAD =====
+  // ==============================
+  // VEHICLE IMAGE UPLOAD / UPDATE
+  // ==============================
   const handleVehicleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const imageForm = new FormData();
-    imageForm.append("file", file);
+    const uploadData = new FormData();
+    uploadData.append("file", file);
 
     try {
       const response = await fetch(
@@ -147,7 +155,7 @@ function VehicleDetails() {
           headers: {
             Authorization: `Bearer ${token}`
           },
-          body: imageForm
+          body: uploadData
         }
       );
 
@@ -162,9 +170,36 @@ function VehicleDetails() {
         `http://localhost:8085${imagePath}?t=${Date.now()}`
       );
 
-    } catch (error) {
-      console.error("Vehicle image upload failed", error);
+    } catch (err) {
+      console.error("Vehicle image upload failed", err);
       alert("Failed to upload vehicle image");
+    }
+  };
+
+  // ==============================
+  // VEHICLE IMAGE DELETE
+  // ==============================
+  const handleVehicleImageDelete = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/vehicle-profile-picture",
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Delete failed");
+      }
+
+      setVehicleImage(null);
+
+    } catch (err) {
+      console.error("Vehicle image delete failed", err);
+      alert("Failed to delete vehicle image");
     }
   };
 
@@ -175,8 +210,8 @@ function VehicleDetails() {
       {/* ===== VEHICLE PROFILE PHOTO ===== */}
       <div className="profile-photo-section">
         <div className="profile-photo-wrapper">
-          <div className="profile-photo-circle">
 
+          <div className="profile-photo-circle">
             {vehicleImage ? (
               <img
                 src={vehicleImage}
@@ -186,19 +221,47 @@ function VehicleDetails() {
             ) : (
               <span className="profile-initials">V</span>
             )}
+          </div>
 
-            <label className="photo-upload-btn">
-              +
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleVehicleImageUpload}
-              />
-            </label>
+          {/* ===== ACTION BUTTONS BELOW PHOTO ===== */}
+          <div className="photo-actions">
+
+            {!vehicleImage && (
+              <label className="primary-btn">
+                Upload profile picture
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleVehicleImageUpload}
+                />
+              </label>
+            )}
+
+            {vehicleImage && (
+              <>
+                <label className="secondary-btn">
+                  Update profile picture
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleVehicleImageUpload}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="danger-btn"
+                  onClick={handleVehicleImageDelete}
+                >
+                  Delete profile picture
+                </button>
+              </>
+            )}
 
           </div>
-          <p className="photo-hint">Upload Vehicle Photo</p>
+
         </div>
       </div>
 
@@ -207,6 +270,7 @@ function VehicleDetails() {
         <h3>Vehicle Common Details</h3>
 
         <div className="form-grid">
+
           <div>
             <label>1. Vehicle Type :</label>
             <select
@@ -272,6 +336,7 @@ function VehicleDetails() {
               disabled={isLocked}
             />
           </div>
+
         </div>
 
         <div className="form-actions">
@@ -285,7 +350,7 @@ function VehicleDetails() {
         </div>
       </div>
 
-      {/* ===== VEHICLE VERIFICATION DETAILS (UNCHANGED) ===== */}
+      {/* ===== VEHICLE VERIFICATION ===== */}
       <div className="profile-card">
         <h3>Vehicle Verification Details</h3>
 
@@ -298,12 +363,12 @@ function VehicleDetails() {
         </div>
       </div>
 
-      {/* ===== VEHICLE PHOTOS (UNCHANGED) ===== */}
+      {/* ===== VEHICLE EXTRA PHOTOS ===== */}
       <div className="profile-card">
         <h3>Vehicle Photos (up to 5)</h3>
 
         <div className="vehicle-photo-grid">
-          {[1, 2, 3, 4, 5].map((slot) => (
+          {[1, 2, 3, 4, 5].map(slot => (
             <label key={slot} className="vehicle-photo-slot">
               <span className="photo-plus">+</span>
               <input type="file" hidden />

@@ -17,9 +17,10 @@ function DriverDetails() {
   const [profileImage, setProfileImage] = useState(null);
 
   const token = localStorage.getItem("token");
-  
 
-  // ===== LOAD PERSONAL DETAILS =====
+  // ==============================
+  // LOAD PERSONAL DETAILS
+  // ==============================
   useEffect(() => {
     const fetchPersonalDetails = async () => {
       try {
@@ -47,49 +48,52 @@ function DriverDetails() {
           setHasData(true);
           setIsEditing(false);
         }
-      } catch (error) {
-        console.error("Failed to load rider details", error);
+      } catch (err) {
+        console.error("Failed to load rider details", err);
       }
     };
 
     fetchPersonalDetails();
   }, [token]);
 
-// ===== LOAD PROFILE IMAGE FROM BACKEND =====
-useEffect(() => {
-  const fetchProfileImage = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:8085/api/rider/rider-profile-picture",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
+  // ==============================
+  // LOAD PROFILE IMAGE
+  // ==============================
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8085/api/rider/rider-profile-picture",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
-
-      if (!response.ok) return;
-
-      const imageUrl = await response.text();
-
-      if (imageUrl) {
-        setProfileImage(
-          `http://localhost:8085${imageUrl}?t=${Date.now()}`
         );
+
+        if (!response.ok) return;
+
+        const imageUrl = await response.text();
+
+        if (imageUrl) {
+          setProfileImage(
+            `http://localhost:8085${imageUrl}?t=${Date.now()}`
+          );
+        }
+      } catch (err) {
+        console.error("Failed to load profile image", err);
       }
-    } catch (err) {
-      console.error("Failed to load profile image", err);
-    }
-  };
+    };
 
-  fetchProfileImage();
-}, [token]);
+    fetchProfileImage();
+  }, [token]);
 
-
-  // ===== PERSONAL DETAILS HANDLERS =====
+  // ==============================
+  // FORM HANDLERS
+  // ==============================
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -125,19 +129,21 @@ useEffect(() => {
       setIsEditing(false);
       alert("Changes saved successfully");
 
-    } catch (error) {
-      console.error("Save failed", error);
+    } catch (err) {
+      console.error("Save failed", err);
       alert("Failed to save changes");
     }
   };
 
-  // ===== PROFILE IMAGE UPLOAD =====
+  // ==============================
+  // PROFILE IMAGE UPLOAD / UPDATE
+  // ==============================
   const handleProfileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const uploadData = new FormData();
+    uploadData.append("file", file);
 
     try {
       const response = await fetch(
@@ -147,7 +153,7 @@ useEffect(() => {
           headers: {
             Authorization: `Bearer ${token}`
           },
-          body: formData
+          body: uploadData
         }
       );
 
@@ -158,14 +164,40 @@ useEffect(() => {
 
       const imagePath = await response.text();
 
-      // cache bust
       setProfileImage(
         `http://localhost:8085${imagePath}?t=${Date.now()}`
       );
 
-    } catch (error) {
-      console.error("Profile upload failed", error);
+    } catch (err) {
+      console.error("Profile upload failed", err);
       alert("Failed to upload profile picture");
+    }
+  };
+
+  // ==============================
+  // PROFILE IMAGE DELETE
+  // ==============================
+  const handleProfileImageDelete = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/rider-profile-picture",
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Delete failed");
+      }
+
+      setProfileImage(null);
+
+    } catch (err) {
+      console.error("Profile image delete failed", err);
+      alert("Failed to delete profile picture");
     }
   };
 
@@ -176,8 +208,8 @@ useEffect(() => {
       {/* ===== PROFILE PHOTO ===== */}
       <div className="profile-photo-section">
         <div className="profile-photo-wrapper">
-          <div className="profile-photo-circle">
 
+          <div className="profile-photo-circle">
             {profileImage ? (
               <img
                 src={profileImage}
@@ -187,19 +219,47 @@ useEffect(() => {
             ) : (
               <span className="profile-initials">U</span>
             )}
+          </div>
 
-            <label className="photo-upload-btn">
-              +
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleProfileUpload}
-              />
-            </label>
+          {/* ===== ACTION BUTTONS (BELOW PHOTO) ===== */}
+          <div className="photo-actions">
+
+            {!profileImage && (
+              <label className="primary-btn">
+                Upload profile picture
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleProfileUpload}
+                />
+              </label>
+            )}
+
+            {profileImage && (
+              <>
+                <label className="secondary-btn">
+                  Update profile picture
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleProfileUpload}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="danger-btn"
+                  onClick={handleProfileImageDelete}
+                >
+                  Delete profile picture
+                </button>
+              </>
+            )}
 
           </div>
-          <p className="photo-hint">Upload profile photo</p>
+
         </div>
       </div>
 
