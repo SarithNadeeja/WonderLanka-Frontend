@@ -60,7 +60,7 @@ useEffect(() => {
   const fetchProfileImage = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8085/api/rider/profile-picture",
+        "http://localhost:8085/api/rider/rider-profile-picture",
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -141,7 +141,7 @@ useEffect(() => {
 
     try {
       const response = await fetch(
-        "http://localhost:8085/api/rider/profile-picture",
+        "http://localhost:8085/api/rider/rider-profile-picture",
         {
           method: "POST",
           headers: {

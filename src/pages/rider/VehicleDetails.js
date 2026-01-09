@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 function VehicleDetails() {
 
-  // ===== STATE (MATCH BACKEND EXACTLY) =====
+  // ===== VEHICLE DETAILS STATE =====
   const [formData, setFormData] = useState({
     vehicleType: "",
     vehicleBrand: "",
@@ -14,11 +14,14 @@ function VehicleDetails() {
   const [hasData, setHasData] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // ===== LOAD EXISTING VEHICLE DATA =====
+  // ===== VEHICLE IMAGE STATE =====
+  const [vehicleImage, setVehicleImage] = useState(null);
+
+  const token = localStorage.getItem("token");
+
+  // ===== LOAD VEHICLE DETAILS =====
   useEffect(() => {
     const fetchVehicleDetails = async () => {
-      const token = localStorage.getItem("token");
-
       try {
         const response = await fetch(
           "http://localhost:8085/api/rider/vehicle-common-details",
@@ -43,18 +46,47 @@ function VehicleDetails() {
           });
 
           setHasData(true);
-          setIsEditing(false); // locked by default
+          setIsEditing(false);
         }
-
       } catch (error) {
         console.error("Failed to load vehicle details", error);
       }
     };
 
     fetchVehicleDetails();
-  }, []);
+  }, [token]);
 
-  // ===== HANDLERS =====
+  // ===== LOAD VEHICLE PROFILE IMAGE =====
+  useEffect(() => {
+    const fetchVehicleImage = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8085/api/rider/vehicle-profile-picture",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) return;
+
+        const imageUrl = await response.text();
+
+        if (imageUrl) {
+          setVehicleImage(
+            `http://localhost:8085${imageUrl}?t=${Date.now()}`
+          );
+        }
+      } catch (error) {
+        console.error("Failed to load vehicle image", error);
+      }
+    };
+
+    fetchVehicleImage();
+  }, [token]);
+
+  // ===== FORM HANDLERS =====
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -64,9 +96,7 @@ function VehicleDetails() {
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token");
 
-    // STEP 1: unlock
     if (hasData && !isEditing) {
       setIsEditing(true);
       return;
@@ -91,12 +121,8 @@ function VehicleDetails() {
         return;
       }
 
-      const data = await response.json();
-      console.log("Saved vehicle details:", data);
-
       setHasData(true);
-      setIsEditing(false); // 🔒 re-lock
-
+      setIsEditing(false);
       alert("Vehicle details saved successfully");
 
     } catch (error) {
@@ -105,29 +131,82 @@ function VehicleDetails() {
     }
   };
 
+  // ===== VEHICLE IMAGE UPLOAD =====
+  const handleVehicleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const imageForm = new FormData();
+    imageForm.append("file", file);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/vehicle-profile-picture",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: imageForm
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text);
+      }
+
+      const imagePath = await response.text();
+
+      setVehicleImage(
+        `http://localhost:8085${imagePath}?t=${Date.now()}`
+      );
+
+    } catch (error) {
+      console.error("Vehicle image upload failed", error);
+      alert("Failed to upload vehicle image");
+    }
+  };
+
   const isLocked = hasData && !isEditing;
 
   return (
     <>
-      {/* ===== VEHICLE PHOTO ===== */}
+      {/* ===== VEHICLE PROFILE PHOTO ===== */}
       <div className="profile-photo-section">
         <div className="profile-photo-wrapper">
           <div className="profile-photo-circle">
-            <span className="profile-initials">V</span>
+
+            {vehicleImage ? (
+              <img
+                src={vehicleImage}
+                alt="Vehicle"
+                className="profile-photo-img"
+              />
+            ) : (
+              <span className="profile-initials">V</span>
+            )}
+
             <label className="photo-upload-btn">
               +
-              <input type="file" hidden />
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleVehicleImageUpload}
+              />
             </label>
+
           </div>
           <p className="photo-hint">Upload Vehicle Photo</p>
         </div>
       </div>
 
+      {/* ===== VEHICLE COMMON DETAILS ===== */}
       <div className="profile-card">
         <h3>Vehicle Common Details</h3>
 
         <div className="form-grid">
-
           <div>
             <label>1. Vehicle Type :</label>
             <select
@@ -193,7 +272,6 @@ function VehicleDetails() {
               disabled={isLocked}
             />
           </div>
-
         </div>
 
         <div className="form-actions">
@@ -207,7 +285,7 @@ function VehicleDetails() {
         </div>
       </div>
 
-      {/* ===== VEHICLE VERIFICATION ===== */}
+      {/* ===== VEHICLE VERIFICATION DETAILS (UNCHANGED) ===== */}
       <div className="profile-card">
         <h3>Vehicle Verification Details</h3>
 
@@ -220,7 +298,7 @@ function VehicleDetails() {
         </div>
       </div>
 
-      {/* ===== VEHICLE PHOTOS ===== */}
+      {/* ===== VEHICLE PHOTOS (UNCHANGED) ===== */}
       <div className="profile-card">
         <h3>Vehicle Photos (up to 5)</h3>
 
