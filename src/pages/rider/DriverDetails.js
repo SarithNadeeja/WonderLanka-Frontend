@@ -16,7 +16,41 @@ function DriverDetails() {
   // ===== PROFILE IMAGE STATE =====
   const [profileImage, setProfileImage] = useState(null);
 
+  // ===== LICENSE VERIFICATION STATE =====
+  const [showLicenseModal, setShowLicenseModal] = useState(false);
+  const [licenseFront, setLicenseFront] = useState(null);
+  const [licenseBack, setLicenseBack] = useState(null);
+  const [uploadingLicense, setUploadingLicense] = useState(false);
+  const [licenseStatus, setLicenseStatus] = useState("NOT_SUBMITTED");
+
+
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+  const fetchLicenseStatus = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/license-verification/status",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) return;
+
+      const status = await response.text();
+      setLicenseStatus(status);
+
+    } catch (err) {
+      console.error("Failed to load license status", err);
+    }
+  };
+
+  fetchLicenseStatus();
+}, [token]);
+
 
   // ==============================
   // LOAD PERSONAL DETAILS
@@ -203,6 +237,51 @@ function DriverDetails() {
 
   const isLocked = hasData && !isEditing;
 
+  // ==============================
+  // LICENSE UPLOAD HANDLER (BACKEND)
+  // ==============================
+  const handleLicenseUpload = async () => {
+    if (!licenseFront || !licenseBack) return;
+
+    setUploadingLicense(true);
+
+    const uploadData = new FormData();
+    uploadData.append("front", licenseFront);
+    uploadData.append("back", licenseBack);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/license-verification/upload",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: uploadData
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text);
+      }
+
+      alert("Driving license uploaded successfully");
+
+      setLicenseStatus("PENDING");
+
+      setShowLicenseModal(false);
+      setLicenseFront(null);
+      setLicenseBack(null);
+
+    } catch (err) {
+      console.error("License upload failed", err);
+      alert("Failed to upload driving license");
+    } finally {
+      setUploadingLicense(false);
+    }
+  };
+
   return (
     <>
       {/* ===== PROFILE PHOTO ===== */}
@@ -221,7 +300,6 @@ function DriverDetails() {
             )}
           </div>
 
-          {/* ===== ACTION BUTTONS (BELOW PHOTO) ===== */}
           <div className="photo-actions">
 
             {!profileImage && (
@@ -327,7 +405,7 @@ function DriverDetails() {
         </div>
       </div>
 
-      {/* ===== VERIFICATION (UNCHANGED) ===== */}
+      {/* ===== VERIFICATION ===== */}
       <div className="profile-card">
         <h3>Rider Verification Details</h3>
 
@@ -344,11 +422,84 @@ function DriverDetails() {
 
           <div className="verify-item">
             <span>2. Driving License Verification</span>
-            <button className="upload-btn">Upload</button>
-            <span className="status not-verified">Not Verified</span>
+
+            {licenseStatus === "NOT_SUBMITTED" && (
+              <button
+                className="upload-btn"
+                onClick={() => setShowLicenseModal(true)}
+              >
+                Upload
+              </button>
+            )}
+
+            <span
+              className={`status ${
+                licenseStatus === "PENDING"
+                  ? "pending"
+                  : "not-verified"
+              }`}
+            >
+              {licenseStatus === "PENDING"
+                ? "Pending"
+                : "Not Verified"}
+            </span>
           </div>
+
         </div>
       </div>
+
+      {/* ===== LICENSE UPLOAD MODAL ===== */}
+      {showLicenseModal && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+
+            <h3>Driving License Upload</h3>
+
+            <div className="modal-field">
+              <label>Front Side</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setLicenseFront(e.target.files[0])}
+              />
+              {licenseFront && <small>{licenseFront.name}</small>}
+            </div>
+
+            <div className="modal-field">
+              <label>Back Side</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setLicenseBack(e.target.files[0])}
+              />
+              {licenseBack && <small>{licenseBack.name}</small>}
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="secondary-btn"
+                disabled={uploadingLicense}
+                onClick={() => {
+                  setShowLicenseModal(false);
+                  setLicenseFront(null);
+                  setLicenseBack(null);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="primary-btn"
+                disabled={!licenseFront || !licenseBack || uploadingLicense}
+                onClick={handleLicenseUpload}
+              >
+                {uploadingLicense ? "Uploading..." : "Continue"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </>
   );
 }

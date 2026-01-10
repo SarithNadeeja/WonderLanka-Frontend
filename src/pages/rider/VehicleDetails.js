@@ -19,6 +19,41 @@ function VehicleDetails() {
 
   const token = localStorage.getItem("token");
 
+  // ===== INSURANCE VERIFICATION STATE =====
+const [insuranceStatus, setInsuranceStatus] = useState("NOT_SUBMITTED");
+const [showInsuranceModal, setShowInsuranceModal] = useState(false);
+const [insuranceFront, setInsuranceFront] = useState(null);
+const [insuranceBack, setInsuranceBack] = useState(null);
+const [uploadingInsurance, setUploadingInsurance] = useState(false);
+
+
+useEffect(() => {
+  const fetchInsuranceStatus = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8085/api/rider/insurance-verification/status",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) return;
+
+      const status = await response.text();
+      setInsuranceStatus(status);
+
+    } catch (err) {
+      console.error("Failed to load insurance status", err);
+    }
+  };
+
+  fetchInsuranceStatus();
+}, [token]);
+
+
+
   // ==============================
   // LOAD VEHICLE DETAILS
   // ==============================
@@ -203,6 +238,44 @@ function VehicleDetails() {
     }
   };
 
+      const handleInsuranceUpload = async () => {
+      if (!insuranceFront || !insuranceBack) return;
+
+      setUploadingInsurance(true);
+
+      const uploadData = new FormData();
+      uploadData.append("front", insuranceFront);
+      uploadData.append("back", insuranceBack);
+
+      try {
+        const response = await fetch(
+          "http://localhost:8085/api/rider/insurance-verification/upload",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+            body: uploadData
+          }
+        );
+
+        if (!response.ok) throw new Error();
+
+        // 🔥 UPDATE UI FROM DB LOGIC
+        setInsuranceStatus("PENDING");
+
+        setShowInsuranceModal(false);
+        setInsuranceFront(null);
+        setInsuranceBack(null);
+
+      } catch {
+        alert("Failed to upload insurance documents");
+      } finally {
+        setUploadingInsurance(false);
+      }
+    };
+
+
   const isLocked = hasData && !isEditing;
 
   return (
@@ -357,9 +430,27 @@ function VehicleDetails() {
         <div className="verification-grid">
           <div className="verify-item">
             <span>1. Vehicle Insurance Verification</span>
-            <button className="upload-btn">Upload</button>
-            <span className="status not-verified">Not Verified</span>
+
+            {insuranceStatus === "NOT_SUBMITTED" && (
+              <button
+                className="upload-btn"
+                onClick={() => setShowInsuranceModal(true)}
+              >
+                Upload
+              </button>
+            )}
+
+            <span
+              className={`status ${
+                insuranceStatus === "PENDING" ? "pending" : "not-verified"
+              }`}
+            >
+              {insuranceStatus === "PENDING"
+                ? "Pending"
+                : "Not Verified"}
+            </span>
           </div>
+
         </div>
       </div>
 
@@ -380,6 +471,61 @@ function VehicleDetails() {
           Add clear photos of your vehicle (front, back, sides)
         </p>
       </div>
+
+      {/* ===== INSURANCE UPLOAD MODAL ===== */}
+      {showInsuranceModal && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+
+            <h3>Vehicle Insurance Upload</h3>
+
+            <div className="modal-field">
+              <label>Front Side</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setInsuranceFront(e.target.files[0])}
+              />
+              {insuranceFront && <small>{insuranceFront.name}</small>}
+            </div>
+
+            <div className="modal-field">
+              <label>Back Side</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setInsuranceBack(e.target.files[0])}
+              />
+              {insuranceBack && <small>{insuranceBack.name}</small>}
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="secondary-btn"
+                disabled={uploadingInsurance}
+                onClick={() => {
+                  setShowInsuranceModal(false);
+                  setInsuranceFront(null);
+                  setInsuranceBack(null);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="primary-btn"
+                disabled={!insuranceFront || !insuranceBack || uploadingInsurance}
+                onClick={handleInsuranceUpload}
+              >
+                {uploadingInsurance ? "Uploading..." : "Continue"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      
     </>
   );
 }

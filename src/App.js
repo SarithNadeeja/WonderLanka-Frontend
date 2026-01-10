@@ -22,6 +22,9 @@ import  RiderProfile from "./pages/rider/RiderProfile";
 import DriverDetails from "./pages/rider/DriverDetails";
 import VehicleDetails from "./pages/rider/VehicleDetails";
 
+import AdminLogin from "./admin/AdminLogin";
+import AdminDashboard from "./admin/AdminDashboard";
+
 
 /* ---------------- APP LAYOUT ---------------- */
 
@@ -70,6 +73,10 @@ function AppLayout() {
         <Route path="/rider/profile" element={<RiderProfile />} />
         <Route path="/rider/profile/driver" element={<DriverDetails />} />
         <Route path="/rider/profile/vehicle" element={<VehicleDetails />} />
+
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+
 
 
         {/* ONBOARDING (AUTH REQUIRED) */}
