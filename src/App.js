@@ -40,6 +40,8 @@ function AppLayout() {
     "/check-email",
     "/role-selection",
     "/tourist-setup",
+    "/admin-login",
+    "/admin"
   ];
 
   const hideNavbar = hideNavbarRoutes.includes(location.pathname);
