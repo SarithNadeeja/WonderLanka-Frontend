@@ -11,7 +11,7 @@ function Sidebar() {
 
       {/* Dashboard */}
       <nav className="sidebar-section">
-        <NavLink to="/" className="sidebar-link">
+        <NavLink to="/admin" className="sidebar-link">
           Dashboard
         </NavLink>
       </nav>
@@ -21,7 +21,7 @@ function Sidebar() {
         <p className="sidebar-title">Verifications</p>
 
         <NavLink
-          to="/verifications/driving-license"
+          to="/admin/verifications/driving-license"
           className="sidebar-link"
         >
           Driving License

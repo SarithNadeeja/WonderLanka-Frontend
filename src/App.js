@@ -23,7 +23,10 @@ import DriverDetails from "./pages/rider/DriverDetails";
 import VehicleDetails from "./pages/rider/VehicleDetails";
 
 import AdminLogin from "./admin/AdminLogin";
+
+import AdminLayout from "./admin/AdminLayout";
 import AdminDashboard from "./admin/AdminDashboard";
+import AdminDrivingLicense from "./admin/AdminDrivingLicense";
 
 
 /* ---------------- APP LAYOUT ---------------- */
@@ -78,6 +81,16 @@ function AppLayout() {
 
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminDashboard />} />
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route
+            path="verifications/driving-license"
+            element={<AdminDrivingLicense />}
+  />
+        </Route>
+
+        
 
 
 

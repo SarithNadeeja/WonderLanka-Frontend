@@ -1,13 +1,5 @@
-import Sidebar from "./AdminSidebar"; // adjust path if needed
-import "./AdminDashboard.css";
-
 function AdminDashboard() {
-  return (
-    <div className="admin-layout">
-      {/* Sidebar */}
-      <Sidebar />
-    </div>
-  );
+  return <h1>Welcome to Dashboard</h1>;
 }
 
 export default AdminDashboard;
