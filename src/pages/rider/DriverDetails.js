@@ -421,29 +421,35 @@ function DriverDetails() {
           </div>
 
           <div className="verify-item">
-            <span>2. Driving License Verification</span>
+          <span>2. Driving License Verification</span>
 
-            {licenseStatus === "NOT_SUBMITTED" && (
-              <button
-                className="upload-btn"
-                onClick={() => setShowLicenseModal(true)}
-              >
-                Upload
-              </button>
-            )}
-
-            <span
-              className={`status ${
-                licenseStatus === "PENDING"
-                  ? "pending"
-                  : "not-verified"
-              }`}
+          {licenseStatus === "NOT_SUBMITTED" && (
+            <button
+              className="upload-btn"
+              onClick={() => setShowLicenseModal(true)}
             >
-              {licenseStatus === "PENDING"
-                ? "Pending"
-                : "Not Verified"}
-            </span>
-          </div>
+              Upload
+            </button>
+          )}
+
+          <span
+            className={`status ${
+              licenseStatus === "PENDING"
+                ? "pending"
+                : licenseStatus === "APPROVED"
+                ? "verified"
+                : licenseStatus === "REJECTED"
+                ? "rejected"
+                : "not-verified"
+            }`}
+          >
+            {licenseStatus === "PENDING" && "Pending"}
+            {licenseStatus === "APPROVED" && "Verified"}
+            {licenseStatus === "REJECTED" && "Rejected"}
+            {licenseStatus === "NOT_SUBMITTED" && "Not Verified"}
+          </span>
+        </div>
+
 
         </div>
       </div>

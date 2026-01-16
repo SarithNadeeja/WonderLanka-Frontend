@@ -58,6 +58,47 @@ function AdminDrivingLicense() {
     fetchRequests();
   }, [adminToken]);
 
+
+  const approveVerification = async (verificationId) => {
+  await fetch(
+    `http://localhost:8085/api/admin/license-verifications/${verificationId}/approve`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${adminToken}`
+      }
+    }
+  );
+
+  // remove from UI
+  setRequests(prev =>
+    prev.filter(v => v.verificationId !== verificationId)
+  );
+};
+
+const rejectVerification = async (verificationId) => {
+  const reason = prompt("Enter rejection reason:");
+  if (!reason) return;
+
+  await fetch(
+    `http://localhost:8085/api/admin/license-verifications/${verificationId}/reject`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ reason })
+    }
+  );
+
+  // remove from UI
+  setRequests(prev =>
+    prev.filter(v => v.verificationId !== verificationId)
+  );
+};
+
+
   if (loading) {
     return <h2>Loading license verification requests...</h2>;
   }
@@ -99,10 +140,12 @@ function AdminDrivingLicense() {
           </div>
 
           <div className="action-buttons">
-            <button className="approve-btn" disabled>
+            <button className="approve-btn" 
+            onClick={() => approveVerification(req.verificationId)}>
               Approve
             </button>
-            <button className="reject-btn" disabled>
+            <button className="reject-btn" 
+            onClick={() => rejectVerification(req.verificationId)}>
               Reject
             </button>
           </div>
