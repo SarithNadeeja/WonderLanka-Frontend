@@ -23,6 +23,10 @@ function DriverDetails() {
   const [uploadingLicense, setUploadingLicense] = useState(false);
   const [licenseStatus, setLicenseStatus] = useState("NOT_SUBMITTED");
 
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [showRejectionReason, setShowRejectionReason] = useState(false);
+
+
 
   const token = localStorage.getItem("token");
 
@@ -41,7 +45,24 @@ function DriverDetails() {
       if (!response.ok) return;
 
       const status = await response.text();
-      setLicenseStatus(status);
+setLicenseStatus(status);
+
+if (status === "REJECTED") {
+  const reasonRes = await fetch(
+    "http://localhost:8085/api/rider/license-verification/rejection-reason",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  if (reasonRes.ok) {
+    const reason = await reasonRes.text();
+    setRejectionReason(reason);
+  }
+}
+
 
     } catch (err) {
       console.error("Failed to load license status", err);
@@ -423,6 +444,7 @@ function DriverDetails() {
           <div className="verify-item">
           <span>2. Driving License Verification</span>
 
+          {/* NOT SUBMITTED */}
           {licenseStatus === "NOT_SUBMITTED" && (
             <button
               className="upload-btn"
@@ -431,6 +453,26 @@ function DriverDetails() {
               Upload
             </button>
           )}
+
+          {/* REJECTED */}
+          {licenseStatus === "REJECTED" && (
+            <>
+              <button
+                className="upload-btn"
+                onClick={() => setShowRejectionReason(true)}
+              >
+                See why
+              </button>
+
+              <button
+                className="upload-btn"
+                onClick={() => setShowLicenseModal(true)}
+              >
+                Upload again
+              </button>
+            </>
+          )}
+
 
           <span
             className={`status ${
@@ -504,7 +546,30 @@ function DriverDetails() {
             </div>
 
           </div>
+            {showRejectionReason && (
+            <div className="modal-overlay">
+              <div className="modal-card">
+                <h3>License Rejected</h3>
+
+                <p style={{ marginTop: "10px", fontSize: "14px" }}>
+                  {rejectionReason || "No reason provided"}
+                </p>
+
+                <div className="modal-actions">
+                  <button
+                    className="primary-btn"
+                    onClick={() => setShowRejectionReason(false)}
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
+
+        
       )}
     </>
   );
